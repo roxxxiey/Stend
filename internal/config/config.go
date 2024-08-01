@@ -7,16 +7,10 @@ import (
 	"time"
 )
 
-var DataChannel = make(chan string)
-
 type Config struct {
 	Env         string     `yaml:"env" env-default:"local"`
 	StoragePath string     `yaml:"storage_path" env-required:"true"`
 	GRPC        GRPCConfig `yaml:"grpc"`
-	IPS         []string   `yaml:"ips"`
-	Username    string     `yaml:"user_name"`
-	Password    string     `yaml:"password"`
-	TFTPServer  string     `yaml:"tftp_server" `
 }
 
 type GRPCConfig struct {
@@ -47,9 +41,11 @@ func MustLoad() *Config {
 func fetchConfigPath() string {
 	var res string
 	var safe string
+	var path string
 
 	flag.StringVar(&res, "config", "", "path to config file")
 	flag.StringVar(&safe, "safe", "", "safe config file")
+	flag.StringVar(&path, "pathfile", "", "path to file with firmware")
 	flag.Parse()
 
 	if res == "" {
@@ -57,6 +53,9 @@ func fetchConfigPath() string {
 	}
 	if safe == "" {
 		safe = ""
+	}
+	if path == "" {
+		path = ""
 	}
 	return res
 }

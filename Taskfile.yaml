@@ -1,0 +1,50 @@
+#https://taskfile.dev/api/
+
+version: '3'
+
+env:
+  PathToMain: ./cmd
+  PathToBin: ./nap_crc.bin
+  PathToErrBin: ./nap.bin
+
+tasks:
+  default:
+
+  build:
+    aliases:
+      - buildServer
+    desc: build server
+    cmds:
+      - powershell New-Item -ItemType Directory -Force -Path ./build
+      - powershell Copy-Item -Path ./config/local.yaml -Destination ./build/config.yaml
+      - powershell Copy-Item -Path ./devConf/deviceConf.yaml -Destination ./build/devConf.yaml
+      - powershell Copy-Item $PathToBin -Destination ./build/
+      - powershell Copy-Item $PathToErrBin -Destination ./build/
+      - go build -o ./build/server.exe ./cmd/main.go
+
+  runProdSafe:
+    aliases:
+      - runServerWithSafeConfig
+    dir: ./build/
+    desc: run server with safe devices configs to "deviceconfigs" folder (with backup)
+    cmds:
+      - task: clsBuild
+      - task: buildServer
+      - ./server.exe --config=./config.yaml --safe="safe" --pathfile="nap_crc.bin"
+
+  runProd:
+    aliases:
+      - runServer
+    dir: ./build/
+    desc: run server
+    cmds:
+      - task: clsBuild
+      - task: buildServer
+      - ./server.exe --config=./config.yaml --pathfile="nap_crc.bin"
+
+  clsBuild:
+    aliases:
+      - clsBuild
+    desc: remove build dir
+    cmds:
+      - powershell rm -Force -r ./build

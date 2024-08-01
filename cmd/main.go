@@ -3,6 +3,7 @@ package main
 import (
 	"ForStend/internal/app"
 	"ForStend/internal/config"
+	_ "ForStend/internal/devConf"
 	"context"
 	"log/slog"
 	"os"

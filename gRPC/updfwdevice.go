@@ -47,9 +47,6 @@ func (t *TFTPviaSSH) UPDFWType(ctx context.Context, request *sh.UPDFWTypeRequest
 func (t *TFTPviaSSH) UpdateFirmware(ctx context.Context, request *sh.UpdateFirmwareRequest) (*sh.UpdateFirmwareResponse, error) {
 	log.Println("Call Udate Firmware")
 
-	/*safe := flag.String("safe", "", "Safe file name")
-	flag.Parse()*/
-
 	settings := request.GetSettings()
 	ip := settings[0].GetValue()
 	user := settings[1].GetValue()
@@ -114,7 +111,7 @@ func (t *TFTPviaSSH) UpdateFirmware(ctx context.Context, request *sh.UpdateFirmw
 		com := getter.Value.String()
 
 		if com != "" {
-			safeCommand := fmt.Sprintf("util tftp " + ipTftpSever + " put config safeConf.json")
+			safeCommand := fmt.Sprintf("util tftp " + ipTftpSever + " put config ./deviceconfigs/safeConf" + ip + ".yaml")
 			if err = t.sendCommand(stdin, safeCommand); err != nil {
 				log.Printf("Failed to send first command: %v. Retrying (%d/%d)...", err, retries+1, maxRetries)
 				time.Sleep(time.Duration(retryDelay))
@@ -168,10 +165,8 @@ func (t *TFTPviaSSH) UpdateFirmware(ctx context.Context, request *sh.UpdateFirmw
 
 		log.Printf("Commands executed successfully")
 
-		if err = session.Wait(); err != nil {
-			log.Printf("Failed to wait for session: %v. Retrying (%d/%d)...", err, retries+1, maxRetries)
-			time.Sleep(time.Duration(retryDelay))
-			continue
+		if err = session.Wait(); err != nil && !strings.Contains(err.Error(), "wait: remote command exited without exit status or exit signal") {
+			return nil, fmt.Errorf("failed to wait for session: %s", err)
 		}
 
 		return &sh.UpdateFirmwareResponse{

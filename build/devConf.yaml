@@ -1,0 +1,8 @@
+ips:
+  - 172.23.11.108
+  - 172.23.11.109
+
+stend_data:
+  user_name: "admin"
+  password: "spbec"
+  tftp_server_ip: "172.23.11.200"
